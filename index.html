@@ -24,7 +24,7 @@
 </head>
 <body>
     <!-- ✅ Navbar -->
-    <nav class="flex flex-col md:flex-row justify-between items-center bg-[#15803D] h-auto md:h-16 px-6 py-3 text-white gap-3 md:gap-0">
+    <nav class=" sticky top-0 z-50 flex flex-col md:flex-row justify-between items-center bg-[#15803D] h-auto md:h-16 px-6 py-3 text-white gap-3 md:gap-0">
         <h1 class="text-xl font-bold">Green earth</h1>
 
         <!-- Links -->
@@ -84,6 +84,57 @@
         </div>
         
     </section> -->
+    <!-- 2nd -->
+
+
+    <section class="bg-green-50 min-h-screen flex flex-col">
+        <!-- Main Layout -->
+   <main class="flex flex-1 p-4 gap-4">
+    
+    <!-- Categories -->
+    <aside class="w-1/5 bg-white shadow rounded p-3">
+      <h2 class="text-lg font-semibold mb-3">Categories</h2>
+      <div id="categoryList" class="space-y-2"></div>
+    </aside>
+
+    <!-- Plants -->
+    <section class="flex-1">
+      <h2 class="text-lg font-semibold mb-3">Choose Your Trees</h2>
+      
+      <!-- Spinner -->
+      <div id="spinner" class="hidden text-center">
+        <span class="loading loading-spinner loading-lg text-green-600"></span>
+      </div>
+
+      <!-- Plant Cards -->
+      <div id="plants" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+    </section>
+
+    <!-- Cart -->
+    <aside class="w-1/4 bg-white shadow rounded p-3">
+      <h2 class="text-lg font-semibold mb-3">🛒 Cart</h2>
+      <div id="cart" class="space-y-2"></div>
+      <p class="mt-4 font-bold">Total: <span id="total">৳0</span></p>
+    </aside>
+
+  </main>
+
+  <!-- Modal -->
+  <dialog id="detailModal" class="modal">
+    <div class="modal-box">
+      <h3 id="modalTitle" class="font-bold text-lg"></h3>
+      <img id="modalImg" src="" alt="" class="w-full h-48 object-cover rounded mt-2 mb-2" />
+      <p id="modalDesc" class="text-gray-600"></p>
+      <div class="modal-action">
+        <form method="dialog">
+          <button class="btn">Close</button>
+        </form>
+      </div>
+    </div>
+  </dialog>
+    </section>
+
+    <!-- 3rd -->
 
     <section class="bg-[#CFF0DC80]">
   <div class="w-[90%] md:w-[60%] mx-auto min-h-[610px] py-8">
@@ -169,22 +220,37 @@
   </div>
 </section>
     <!-- 5th -->
-    <section>
-        <h2>Plant a Tree Today</h2>
-        <div>
-            <fieldset class="fieldset bg-base-200 border-base-300 rounded-box w-xs border p-4">
-    <legend class="fieldset-legend">Login</legend>
+    <section class="bg-[#166534] w-full h-[500px] flex flex-col justify-center items-center ">
+       <div class=" flex flex-col justify-center items-center space-y-6">
+        <h2 class="text-center text-xl md:text-2xl font-semibold text-white">Plant a Tree Today</h2>
+        <div class="">
+            <fieldset class="fieldset border-none  bg-[#15803D] rounded-box md:w-[650px] border p-4 space-y-3 ">
+    
 
-    <label class="label">Email</label>
-    <input type="email" class="input" placeholder="Email" />
+             
+              <input type="email" class="input w-full" placeholder="Your name" />
 
-    <label class="label">Password</label>
-     <input type="password" class="input" placeholder="Password" />
+              
+               <input type="password" class="input w-full" placeholder="Email" />
 
-    <button class="btn btn-neutral mt-4">Login</button>
-    </fieldset>
-        </div> 
+              <label class="select  w-full">
+                  <span class="label">Type</span>
+                  <select>
+                    <option></option>
+                    <option></option>
+                  </select>
+                </label>
+
+              <button class="btn btn-neutral  bg-[#FACC15] rounded-full border-none text-green-800">Donate Now</button>
+              </fieldset>
+                  </div> 
+                 </div>
+        
 </section>
+
+<footer class="bg-[#14532D] text-center py-4 text-white">
+  <span class="">© 2025 Green Earth. All Rights Reserved.</span>
+</footer>
 <script src="./script/index.js"></script>   
 </body>
 </html>
