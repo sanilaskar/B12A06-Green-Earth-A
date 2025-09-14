@@ -91,7 +91,7 @@ function displayPlants(plants) {
       <p class="text-sm text-gray-600 flex-grow">${p.description.slice(0,70)}...</p>
       <div class="flex justify-between mt-2 font-semibold">
         <span>${p.category}</span>
-        <span>${p.price} Taka</span>
+        <span> <i class="fa-solid fa-bangladeshi-taka-sign"></i>${p.price}</span>
       </div>
       <button class="addBtn mt-2 bg-green-500 hover:bg-green-600 text-white py-1 rounded">Add to Cart</button>
     `;
@@ -111,28 +111,42 @@ function openModal(plant) {
   modalCat.textContent  = plant.category;
   modalPrice.textContent= plant.price;
   modal.classList.remove('hidden');
+  modal.classList.add('flex');
 }
 
 // ----- 7. Cart -----
 function addToCart(plant) {
-  cart.push(plant);
+  const existing = cart.find(item => item.id === plant.id);
+  if (existing) {
+    existing.quantity += 1;         
+  } else {
+    cart.push({ ...plant, quantity: 1 }); 
+  }
   totalPrice += plant.price;
   updateCart();
 }
 
 function removeFromCart(index) {
-  totalPrice -= cart[index].price;
-  cart.splice(index,1);
+  const item = cart[index];
+  totalPrice -= item.price;
+  item.quantity -= 1;
+  if (item.quantity <= 0) {
+    cart.splice(index, 1);
+  }
   updateCart();
 }
+
 
 function updateCart() {
   cartList.innerHTML = "";
   cart.forEach((p, i) => {
     const li = document.createElement('li');
-    li.className = "flex justify-between items-center bg-white p-2 rounded shadow";
+    li.className = "flex justify-between items-center  bg-[#CFF0DC80] p-2 rounded shadow";
     li.innerHTML = `
-      <span>${p.name}</span>
+      <span>
+        ${p.name} <br>
+        <i class="fa-solid fa-bangladeshi-taka-sign"></i>${p.price} × ${p.quantity}
+      </span>
       <button class="text-red-500 font-bold">&times;</button>
     `;
     li.querySelector('button').onclick = () => removeFromCart(i);
