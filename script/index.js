@@ -1,7 +1,7 @@
 const categoryList = document.getElementById('categoryList');
 const plantGrid    = document.getElementById('plantGrid');
 const cartList     = document.getElementById('cartList');
-const totalPriceEl = document.getElementById('totalPrice');
+const totalPriceAll = document.getElementById('totalPrice');
 
 const modal        = document.getElementById('modal');
 const modalImg     = document.getElementById('modalImg');
@@ -14,7 +14,6 @@ document.getElementById('closeModal').onclick = () => modal.classList.add('hidde
 let cart = [];
 let totalPrice = 0;
 
-// ----- 1. Hard-coded category names -----
 const categories = [
   { id: 1, name: "Fruit Trees" },
   { id: 2, name: "Flowering Trees" },
@@ -28,11 +27,9 @@ const categories = [
   { id: 10, name: "Aquatic Plants" }
 ];
 
-// ----- 2. Render Category Buttons -----
 function renderCategories() {
-  // "All" button
   const allBtn = document.createElement('li');
-  allBtn.innerHTML = `<button class="catBtn w-full text-left px-2 py-1 bg-green-600 text-white rounded"
+  allBtn.innerHTML = `<button class="catBtn w-full text-left px-2 py-1 bg-[#15803D] text-white rounded"
                         data-id="">All Trees</button>`;
   categoryList.appendChild(allBtn);
 
@@ -50,17 +47,15 @@ function renderCategories() {
     }
   });
 
-  highlightActive(allBtn.querySelector('button')); // default active
+  highlightActive(allBtn.querySelector('button')); 
 }
 
-// ----- 3. Highlight Active Category -----
 function highlightActive(btn) {
   document.querySelectorAll('.catBtn')
-    .forEach(b => b.classList.remove('bg-green-600','text-white'));
-  btn.classList.add('bg-green-600','text-white');
+    .forEach(b => b.classList.remove('bg-[#15803D]','text-white'));
+  btn.classList.add('bg-[#15803D]','text-white');
 }
 
-// ----- 4. Load Plants -----
 async function loadPlants(catId = null) {
   plantGrid.innerHTML = `<p class="col-span-full text-center">Loading...</p>`;
   let url = 'https://openapi.programming-hero.com/api/plants';
@@ -72,14 +67,13 @@ async function loadPlants(catId = null) {
       plantGrid.innerHTML = `<p class="col-span-full text-center text-gray-600">No plants found.</p>`;
       return;
     }
-    const plants = data.plants.slice(0,6); // show only 6 by default
+    const plants = data.plants.slice(0,6); 
     displayPlants(plants);
   } catch (err) {
     plantGrid.innerHTML = `<p class="text-red-500">Failed to load plants</p>`;
   }
 }
 
-// ----- 5. Display Plant Cards -----
 function displayPlants(plants) {
   plantGrid.innerHTML = "";
   plants.forEach(p => {
@@ -87,23 +81,20 @@ function displayPlants(plants) {
     card.className = "bg-white rounded shadow p-3 flex flex-col";
     card.innerHTML = `
       <img src="${p.image}" alt="${p.name}" class="h-40 w-full object-cover rounded mb-2">
-      <h3 class="text-lg font-bold text-green-700 cursor-pointer hover:underline plantName">${p.name}</h3>
+      <h3 class="text-lg font-bold text-black-700 cursor-pointer hover:underline plantName">${p.name}</h3>
       <p class="text-sm text-gray-600 flex-grow">${p.description.slice(0,70)}...</p>
       <div class="flex justify-between mt-2 font-semibold">
-        <span>${p.category}</span>
+        <span class="bg-[#DCFCE7] text-green-700 rounded-full shadow p-2 text-xs">${p.category}</span>
         <span> <i class="fa-solid fa-bangladeshi-taka-sign"></i>${p.price}</span>
       </div>
-      <button class="addBtn mt-2 bg-green-500 hover:bg-green-600 text-white py-1 rounded">Add to Cart</button>
+      <button class="addBtn mt-2 bg-[#15803D] hover:bg-green-600 text-white py-1 rounded-full">Add to Cart</button>
     `;
-    // modal open on name click
     card.querySelector('.plantName').onclick = () => openModal(p);
-    // add to cart
     card.querySelector('.addBtn').onclick = () => addToCart(p);
     plantGrid.appendChild(card);
   });
 }
 
-// ----- 6. Modal -----
 function openModal(plant) {
   modalImg.src = plant.image;
   modalName.textContent = plant.name;
@@ -114,7 +105,6 @@ function openModal(plant) {
   modal.classList.add('flex');
 }
 
-// ----- 7. Cart -----
 function addToCart(plant) {
   const existing = cart.find(item => item.id === plant.id);
   if (existing) {
@@ -152,9 +142,8 @@ function updateCart() {
     li.querySelector('button').onclick = () => removeFromCart(i);
     cartList.appendChild(li);
   });
-  totalPriceEl.textContent = totalPrice;
+  totalPriceAll.textContent = totalPrice;
 }
 
-// ----- Start -----
 renderCategories();
-loadPlants(); // default load all plants
+loadPlants(); 
