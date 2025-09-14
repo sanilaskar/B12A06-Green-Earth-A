@@ -1,189 +1,146 @@
-// ===============================
-// Elements
-// ===============================
-const categoryList = document.getElementById("categoryList");
-const plantsDiv = document.getElementById("plants");
-const spinner = document.getElementById("spinner");
-const cartDiv = document.getElementById("cart");
-const totalSpan = document.getElementById("total");
-const detailModal = document.getElementById("detailModal");
+const categoryList = document.getElementById('categoryList');
+const plantGrid    = document.getElementById('plantGrid');
+const cartList     = document.getElementById('cartList');
+const totalPriceEl = document.getElementById('totalPrice');
 
-// Cart
+const modal        = document.getElementById('modal');
+const modalImg     = document.getElementById('modalImg');
+const modalName    = document.getElementById('modalName');
+const modalDesc    = document.getElementById('modalDesc');
+const modalCat     = document.getElementById('modalCat');
+const modalPrice   = document.getElementById('modalPrice');
+document.getElementById('closeModal').onclick = () => modal.classList.add('hidden');
+
 let cart = [];
+let totalPrice = 0;
 
-// API URLs
-const allPlants = "https://openapi.programming-hero.com/api/plants";
-const allCategories = "https://openapi.programming-hero.com/api/categories";
-const byCategory = (id) => `https://openapi.programming-hero.com/api/category/${id}`;
-const byId = (id) => `https://openapi.programming-hero.com/api/plant/${id}`;
+// ----- 1. Hard-coded category names -----
+const categories = [
+  { id: 1, name: "Fruit Trees" },
+  { id: 2, name: "Flowering Trees" },
+  { id: 3, name: "Shade Trees" },
+  { id: 4, name: "Medicinal Trees" },
+  { id: 5, name: "Timber Trees" },
+  { id: 6, name: "Evergreen Trees" },
+  { id: 7, name: "Ornamental Trees" },
+  { id: 8, name: "Bamboo" },
+  { id: 9, name: "Climbers" },
+  { id: 10, name: "Aquatic Plants" }
+];
 
-// ===============================
-// Load Categories
-// ===============================
-async function loadCategories() {
+// ----- 2. Render Category Buttons -----
+function renderCategories() {
+  // "All" button
+  const allBtn = document.createElement('li');
+  allBtn.innerHTML = `<button class="catBtn w-full text-left px-2 py-1 bg-green-600 text-white rounded"
+                        data-id="">All Trees</button>`;
+  categoryList.appendChild(allBtn);
+
+  categories.forEach(cat => {
+    const li = document.createElement('li');
+    li.innerHTML = `<button class="catBtn w-full text-left px-2 py-1 hover:bg-green-100 rounded"
+                        data-id="${cat.id}">${cat.name}</button>`;
+    categoryList.appendChild(li);
+  });
+
+  categoryList.addEventListener('click', e => {
+    if (e.target.matches('.catBtn')) {
+      highlightActive(e.target);
+      loadPlants(e.target.dataset.id || null);
+    }
+  });
+
+  highlightActive(allBtn.querySelector('button')); // default active
+}
+
+// ----- 3. Highlight Active Category -----
+function highlightActive(btn) {
+  document.querySelectorAll('.catBtn')
+    .forEach(b => b.classList.remove('bg-green-600','text-white'));
+  btn.classList.add('bg-green-600','text-white');
+}
+
+// ----- 4. Load Plants -----
+async function loadPlants(catId = null) {
+  plantGrid.innerHTML = `<p class="col-span-full text-center">Loading...</p>`;
+  let url = 'https://openapi.programming-hero.com/api/plants';
+  if (catId) url = `https://openapi.programming-hero.com/api/category/${catId}`;
   try {
-    const res = await fetch(allCategories);
+    const res  = await fetch(url);
     const data = await res.json();
-    const cats = data.data || [];
-
-    // Add "All Trees" first
-    categoryList.innerHTML = "";
-    addCategoryBtn({ id: "all", name: "All Trees" }, true);
-
-    cats.forEach((c) => addCategoryBtn(c));
-
-    // Auto load default 6 plants
-    loadDefaultPlants();
-  } catch (error) {
-    console.error("Error loading categories:", error);
-    categoryList.innerHTML = `<p class="text-red-500">Failed to load categories</p>`;
+    if (!data.plants || data.plants.length === 0) {
+      plantGrid.innerHTML = `<p class="col-span-full text-center text-gray-600">No plants found.</p>`;
+      return;
+    }
+    const plants = data.plants.slice(0,6); // show only 6 by default
+    displayPlants(plants);
+  } catch (err) {
+    plantGrid.innerHTML = `<p class="text-red-500">Failed to load plants</p>`;
   }
 }
 
-function addCategoryBtn(cat, active = false) {
-  const btn = document.createElement("button");
-  btn.textContent = cat.name;
-  btn.className = `px-3 py-1 rounded w-full text-left hover:bg-green-200 ${
-    active ? "bg-green-600 text-white" : "bg-white"
-  }`;
-  btn.onclick = () => loadByCategory(cat.id, btn);
-  categoryList.appendChild(btn);
-}
-
-// ===============================
-// Default Plants (first 6)
-// ===============================
-async function loadDefaultPlants() {
-  spinner.classList.remove("hidden");
-  plantsDiv.innerHTML = "";
-
-  try {
-    const res = await fetch(allPlants);
-    const data = await res.json();
-    const plants = data.data || [];
-    renderPlants(plants.slice(0, 6)); // show 6 by default
-  } catch (error) {
-    plantsDiv.innerHTML = `<p class="text-red-500">Failed to load plants</p>`;
-  }
-
-  spinner.classList.add("hidden");
-}
-
-// ===============================
-// Load by Category
-// ===============================
-async function loadByCategory(id, btn) {
-  // Highlight active button
-  Array.from(categoryList.children).forEach((b) =>
-    b.classList.remove("bg-green-600", "text-white")
-  );
-  btn.classList.add("bg-green-600", "text-white");
-
-  spinner.classList.remove("hidden");
-  plantsDiv.innerHTML = "";
-
-  try {
-    const url = id === "all" ? allPlants : byCategory(id);
-    const res = await fetch(url);
-    const data = await res.json();
-    renderPlants(data.data || []);
-  } catch (error) {
-    plantsDiv.innerHTML = `<p class="text-red-500">Failed to load plants</p>`;
-  }
-
-  spinner.classList.add("hidden");
-}
-
-// ===============================
-// Render Plant Cards
-// ===============================
-function renderPlants(plants) {
-  plantsDiv.innerHTML = "";
-  plants.forEach((p) => {
-    const card = document.createElement("div");
-    card.className =
-      "bg-white rounded-xl shadow p-4 flex flex-col justify-between";
-
+// ----- 5. Display Plant Cards -----
+function displayPlants(plants) {
+  plantGrid.innerHTML = "";
+  plants.forEach(p => {
+    const card = document.createElement('div');
+    card.className = "bg-white rounded shadow p-3 flex flex-col";
     card.innerHTML = `
-      <img src="${p.image}" alt="${p.name}" class="h-40 w-full object-cover mb-2 rounded cursor-pointer">
-      <h3 class="text-lg font-semibold text-green-700 cursor-pointer">${p.name}</h3>
-      <p class="text-sm text-gray-600 line-clamp-2">${p.short_description}</p>
-      <div class="flex justify-between mt-2">
-        <span class="badge badge-success">${p.category}</span>
-        <span class="font-bold">৳${p.price}</span>
+      <img src="${p.image}" alt="${p.name}" class="h-40 w-full object-cover rounded mb-2">
+      <h3 class="text-lg font-bold text-green-700 cursor-pointer hover:underline plantName">${p.name}</h3>
+      <p class="text-sm text-gray-600 flex-grow">${p.description.slice(0,70)}...</p>
+      <div class="flex justify-between mt-2 font-semibold">
+        <span>${p.category}</span>
+        <span>${p.price} Taka</span>
       </div>
-      <button class="btn btn-success w-full mt-2">Add to Cart</button>
+      <button class="addBtn mt-2 bg-green-500 hover:bg-green-600 text-white py-1 rounded">Add to Cart</button>
     `;
-
-    card.querySelector("button").onclick = () => addToCart(p);
-    card.querySelector("h3").onclick = () => showDetails(p.id);
-    card.querySelector("img").onclick = () => showDetails(p.id);
-
-    plantsDiv.appendChild(card);
+    // modal open on name click
+    card.querySelector('.plantName').onclick = () => openModal(p);
+    // add to cart
+    card.querySelector('.addBtn').onclick = () => addToCart(p);
+    plantGrid.appendChild(card);
   });
 }
 
-// ===============================
-// Cart Functions
-// ===============================
-function addToCart(item) {
-  const existing = cart.find((c) => c.id === item.id);
-  if (existing) {
-    existing.qty++;
-  } else {
-    cart.push({ ...item, qty: 1 });
-  }
-  renderCart();
+// ----- 6. Modal -----
+function openModal(plant) {
+  modalImg.src = plant.image;
+  modalName.textContent = plant.name;
+  modalDesc.textContent = plant.description;
+  modalCat.textContent  = plant.category;
+  modalPrice.textContent= plant.price;
+  modal.classList.remove('hidden');
 }
 
-function renderCart() {
-  cartDiv.innerHTML = "";
-  let total = 0;
+// ----- 7. Cart -----
+function addToCart(plant) {
+  cart.push(plant);
+  totalPrice += plant.price;
+  updateCart();
+}
 
-  cart.forEach((c, idx) => {
-    total += c.price * c.qty;
+function removeFromCart(index) {
+  totalPrice -= cart[index].price;
+  cart.splice(index,1);
+  updateCart();
+}
 
-    const row = document.createElement("div");
-    row.className =
-      "flex justify-between items-center bg-green-100 px-2 py-1 rounded";
-
-    row.innerHTML = `
-      <span>${c.name} ৳${c.price} × ${c.qty}</span>
-      <button class="text-red-600">✖</button>
+function updateCart() {
+  cartList.innerHTML = "";
+  cart.forEach((p, i) => {
+    const li = document.createElement('li');
+    li.className = "flex justify-between items-center bg-white p-2 rounded shadow";
+    li.innerHTML = `
+      <span>${p.name}</span>
+      <button class="text-red-500 font-bold">&times;</button>
     `;
-
-    row.querySelector("button").onclick = () => {
-      cart.splice(idx, 1);
-      renderCart();
-    };
-
-    cartDiv.appendChild(row);
+    li.querySelector('button').onclick = () => removeFromCart(i);
+    cartList.appendChild(li);
   });
-
-  totalSpan.textContent = `৳${total}`;
+  totalPriceEl.textContent = totalPrice;
 }
 
-// ===============================
-// Show Plant Details (Modal)
-// ===============================
-async function showDetails(id) {
-  try {
-    const res = await fetch(byId(id));
-    const data = await res.json();
-    const p = data.data;
-
-    document.getElementById("modalTitle").textContent = p.name;
-    document.getElementById("modalImg").src = p.image;
-    document.getElementById("modalDesc").textContent =
-      p.long_description || p.short_description;
-
-    detailModal.showModal();
-  } catch (error) {
-    console.error("Error loading details:", error);
-  }
-}
-
-// ===============================
-// Init
-// ===============================
-loadCategories();
+// ----- Start -----
+renderCategories();
+loadPlants(); // default load all plants
